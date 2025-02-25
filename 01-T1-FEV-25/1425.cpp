@@ -1,54 +1,85 @@
-#include <iostream>
-#include <cmath>
-#include <unordered_set>
+#include <bits/stdc++.h>
+
 using namespace std;
 
-// NOT WORKING YET!!!
+int sizeQueue;
+vector<int> values;
+vector<int> sortedValues;
+
+struct Node {
+    int value;
+    struct Node *next;
+};
+
+typedef struct {
+    struct Node *head;
+    struct Node *tail;
+} Queue;
+
+void initialize(Queue *q) {
+    sizeQueue = 0;
+    q->head = NULL;
+    q->tail = NULL;
+}
+
+void enqueue(Queue *q, int v) {
+    sizeQueue++;
+    struct Node *newNode = (struct Node *)malloc(sizeof(struct Node));
+    if (newNode == NULL) return;
+    newNode->value = v;
+    newNode->next = NULL;
+    if (q->head == NULL) q->head = newNode;
+    if (q->tail != NULL) q->tail->next = newNode;
+    q->tail = newNode;
+}
+
+bool isEmpty(Queue q) {
+    return q.head == NULL && q.tail == NULL;
+}
+
+void dequeue(Queue *q) {
+    sizeQueue--;
+    struct Node *temp;
+    if (q->head == NULL) return;
+    temp = q->head;
+    q->head = temp->next;
+    if (q->head == NULL) q->tail = NULL;
+    free(temp);
+}
+
+int front(Queue q) {
+    return q.head->value;
+}
 
 int main() {
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
-
-    int N, M;
-    while (cin >> N >> M) {
-        if (N == 0 && M == 0)
-            break;
-
-        if (N < 9) {
-            cout << (M == 1 ? "Let me try!" : "Don't make fun of me!") << "\n";
-            continue;
-        }
-
-        if (M == 1 || M == 4 || M == 9) {
-            cout << "Let me try!" << "\n";
-            continue;
-        }
-
-        unordered_set<int> dp;
-        dp.insert(0);
-        bool ok = false;
-        int jmax = static_cast<int>(sqrt(N + 224)) + 1;
-
-        for (int j = 4; j <= jmax; j++) {
-            int L = 2 * j - 1;
-            unordered_set<int> ndp;
-            for (auto d : dp) {
-                int a = d + L;
-                if (a <= N - 9)
-                    ndp.insert(a);
-                int b = d - L;
-                if (b >= -8)
-                    ndp.insert(b);
+    int num, limit;
+    while (cin >> num >> limit) {
+        if (!num && !limit) break;
+        if (limit > 34) cout << "Let me try!\n";
+        else {
+            Queue q;
+            initialize(&q);
+            enqueue(&q, 1);
+            int counter = 2;
+            while (front(q) != limit && front(q) > 0 && front(q) <= num) {
+                int current = front(q);
+                dequeue(&q);
+                if (current < limit) {
+                    if (current + (2 * counter - 1) <= num) current += 2 * counter - 1;
+                    else current -= 2 * counter - 1;
+                    enqueue(&q, current);
+                } else {
+                    if (current - (2 * counter - 1) > 0) current -= 2 * counter - 1;
+                    else current += 2 * counter - 1;
+                    enqueue(&q, current);
+                }
+                counter++;
             }
-            dp = move(ndp);
-            if (dp.find(M - 9) != dp.end()) {
-                ok = true;
-                break;
-            }
-            if (dp.empty())
-                break;
+            if (!isEmpty(q) && front(q) == limit) cout << "Let me try!\n";
+            else cout << "Don't make fun of me!\n";
         }
-        cout << (ok ? "Let me try!" : "Don't make fun of me!") << "\n";
     }
     return 0;
 }
+
+//Augusto C Fagundes
